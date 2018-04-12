@@ -16,3 +16,6 @@ user_pref("network.proxy.socks_port", 8080);
 user_pref("network.proxy.ssl", "127.0.0.1");
 user_pref("network.proxy.ssl_port", 8080);
 user_pref("network.proxy.type", 1);
+// Modify HSTS settings
+user_pref("security.mixed_content.send_hsts_priming", false);
+user_pref("security.mixed_content.use_hsts", false);

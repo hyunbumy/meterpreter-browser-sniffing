@@ -9,5 +9,32 @@
                 "running":true
             }
         ]
+    },
+
+    "project_options":{
+        "misc":{
+            "logging":{
+                "requests":{
+                    "all_tools":"",
+                    "extender":"",
+                    "intruder":"",
+                    "proxy":"/root/itp325/browser-pivot/log",
+                    "repeater":"",
+                    "scanner":"",
+                    "sequencer":"",
+                    "spider":""
+                },
+                "responses":{
+                    "all_tools":"",
+                    "extender":"",
+                    "intruder":"",
+                    "proxy":"/root/itp325/browser-pivot/log",
+                    "repeater":"",
+                    "scanner":"",
+                    "sequencer":"",
+                    "spider":""
+                }
+            }
+        }
     }
 }

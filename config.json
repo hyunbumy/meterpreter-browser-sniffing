@@ -28,7 +28,7 @@
                     "all_tools":"",
                     "extender":"",
                     "intruder":"",
-                    "proxy":"/root/itp325/browser-pivot/log",
+                    "proxy":"/root/itp325/browser-pivot/log_resp",
                     "repeater":"",
                     "scanner":"",
                     "sequencer":"",

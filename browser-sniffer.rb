@@ -189,6 +189,12 @@ user_pref(\"security.mixed_content.use_hsts\", false);\r\n"
         system("echo \'#{payload}\' > #{datastore['BURP_LOC']}/config.json")
     end
 
+    def runGC()
+	#Sleep for 10 sec to allow Burp to start
+	sleep(10)
+	system("rm #{datastore['BURP_LOC']}/config.json")
+    end
+
     def run
         # Main method
         if is_in_admin_group?
@@ -239,6 +245,8 @@ user_pref(\"security.mixed_content.use_hsts\", false);\r\n"
 
     	# Run burp headless with the generated config file
         buildConfig()
+	print_status("Start Garbage Collector")
+	Thread.new{runGC()}
 	print_status("Starting headless Burp")
         system("java -Djava.awt.headless=true -Xmx1g -jar #{datastore['BURP_LOC']}/#{datastore['BURP_NAME']} --config-file=#{datastore['BURP_LOC']}/config.json")
 
